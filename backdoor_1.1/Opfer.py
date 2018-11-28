@@ -23,16 +23,22 @@ def put_recieve():
     pfile.write(pdata)
     pfile.flush()
     pfile.close()
+    po = "put " + pfilename
+    s.send(bytes(po, "utf8"))
     
     
 def get_send():
     gfil = s.recv(256)
     gfilename = str(gfil, "utf8")
-    gfile = open(gfilename, "rb")
-    gsize = os.path.getsize(gfilename)
-    gdata = gfile.read()
-    s.send(bytes(str(gsize), "utf8"))
-    s.send(gdata)
+    if os.path.isfile(gfilename):
+        gfile = open(gfilename, "rb")
+        gsize = os.path.getsize(gfilename)
+        gdata = gfile.read()
+        s.send(bytes(str(gsize), "utf8"))
+        s.send(gdata)
+        go = "get " + gfilename
+        s.send(bytes(go, "utf8"))
+    else: s.send(bytes("error", "utf8"))
 
 def command():
     while True:

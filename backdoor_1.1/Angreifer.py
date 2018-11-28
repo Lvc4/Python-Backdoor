@@ -17,26 +17,33 @@ print (">> Verbunden mit => " + str(adresse[0]))
 def put(befehl):
     bef = befehl.split(" ")
     pfilename = bef[1]
-    print("put " + str(pfilename) + " >>")
-    pfile = open(pfilename, "rb")
-    pdata = pfile.read()
-    psize = os.path.getsize(pfilename)
-    connection.send(bytes(str(pfilename), "utf8"))
-    connection.send(bytes(str(psize), "utf8"))
-    connection.send(pdata)
+    if os.path.isfile(pfilename):
+        pfile = open(pfilename, "rb")
+        pdata = pfile.read()
+        psize = os.path.getsize(pfilename)
+        connection.send(bytes(str(pfilename), "utf8"))
+        connection.send(bytes(str(psize), "utf8"))
+        connection.send(pdata)
+        pob = connection.recv(256)
+        print(str(pob, "utf8"))
+    else: print("File does not exist")
    
 def get(befehl):
     bef = befehl.split(" ")
     gfilename = bef[1]
-    print("get " + str(gfilename) + " >>")
     connection.send(bytes(str(gfilename), "utf8"))
     gsi = connection.recv(256)
-    gsize = int(str(gsi, "utf8"))
-    gdata = connection.recv(gsize)
-    gfile = open(str(gfilename), "wb")
-    gfile.write(gdata)
-    gfile.flush()
-    gfile.close()
+    if "error" not in str(gsi, "utf8"):
+        gsize = int(str(gsi, "utf8"))
+        gdata = connection.recv(gsize)
+        gfile = open(str(gfilename), "wb")
+        gfile.write(gdata)
+        gfile.flush()
+        gfile.close()
+        gob = connection.recv(256)
+        print(str(gob, "utf8"))
+    else: print("File does not exist")
+
 
 def command():
     while True:
